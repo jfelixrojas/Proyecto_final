@@ -1,2 +1,7 @@
-# Proyecto_final
-Proyecto final de física computacional I
+## Proyecto final física computacional I
+
+# Modelo de Jaynes-Cummings usando QuTip
+
+Autor: Mario José Felix Rojas
+
+
