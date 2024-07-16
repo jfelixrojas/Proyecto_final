@@ -2,6 +2,7 @@
 
 # Modelo de Jaynes-Cummings usando QuTip
 
-Autor: Mario José Felix Rojas
+Mario José Felix Rojas
+CC 1017261080
 
 
