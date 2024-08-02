@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt 
 from qutip import *
-
+from scipy.integrate import solve_ivp
 
 class Jaynes_cummings():
     """
@@ -68,8 +68,68 @@ class Jaynes_cummings():
         self.hbar = hbar  # Constante de Planck
         self.wa = wa  # Frecuencia del átomo
         self.wc = wc  # Frecuencia del campo
-        
+    
+    def diff_eq(self, C):
+        """ 
+        Definición del sistema de ecuaciones diferenciales acopladas para C1(t) y C2(t)
 
+        Parámetros:
+        -------------------------------
+        self: atributos inicializados
+
+        Retorna:
+            dCdt: array_like
+                Array con las derivadas de C1 y C2
+        """
+        C1, C2 = C 
+        dC1dt = -1j * self.g * np.sqrt(self.n+1)*C2
+        dC2dt = 1j * self.g * np.sqrt(self.n+1)*C1
+        return [dC1dt,dC2dt]
+    
+    def solve_differential(self):
+        """ 
+        Resuelve el sistema de ecuaciones diferenciales acopladas para C1(t) y C2(t) usando la función odeint de QuTiP
+
+        Parámetros:
+            self : Jaynes_cummings
+            Instancia de la clase con los siguientes atributos
+            - N : int
+                Número máximo de fotones
+            - n : array_like
+                Numero de fotones en la simulación
+            - t : array_like
+                Arreglo de tiempo
+            - c1 : complex
+                Coeficiente para el estado base |g>.
+            - c2 : complex
+                Coeficiente para el estado excitado |e>.
+            - g : float
+                Constante de acople
+            - hbar : float
+                Constante reducida de Planck
+            - wa : float
+                Frecuencia del átomo
+            - wc : float
+                Frecuencia
+        Retorna:
+        --------
+        results: dict
+            Diccionario con los resultados para cada n
+        """
+        results = {}
+        for i in self.n:
+            sol = solve_ivp(self.diff_eq, [self.t[0],self.t[-1]], [self.c1, self.c2], args=(self.g,i), t_eval= self.t)
+            C1, C2 = sol.y
+            inversion = np.abs(C1)**2 -np.abs(C2)**2
+            results[i] = inversion
+
+            plt.plot(self.g*self.t, inversion,label=f'n={i}')
+        plt.title('Inversión de poblaciones en función del tiempo')
+        plt.xlabel('Tiempo')
+        plt.ylabel('Inversión de poblaciones')
+        plt.legend()
+        plt.savefig('./Imagenes/Simulation_outputs/inversion_poblaciones_diff_eq.png')
+        plt.show()
     def solver(self):
         """ 
         Soluciona el modelo de Jaynes-Cummings usando QuTiP para cada valor de fotones (n) y dibuja la 
@@ -97,7 +157,7 @@ class Jaynes_cummings():
             - wc : float
                 Frecuencia del campo
 
-        Retorno:
+        Retorna:
         --------
         None
             La función no retorna ningun valor, solo grafica la inversión de poblaciones.
